@@ -98,10 +98,10 @@
 \end{frame}
 
 \begin{frame}{Table of contents}
-\vspace{0.5 cm}
+\vspace{0.4 cm}
 
 \large
-\begin{description}
+\begin{description}\setlength{\itemsep}{0.15 cm}
 \item[1:00\hspace{0.5 cm}] \textcolor{gray}{(This table of contents)}
 \item[2:00\hspace{0.5 cm}] Why does this library exist? Motivation from particle physics
 \item[5:00\hspace{0.5 cm}] ``Live'' demo exploring a dataset: Chicago bike paths
@@ -116,6 +116,17 @@
 \end{description}
 \end{frame}
 
+\begin{frame}{}
+\Huge
+\vspace{1 cm}
+\begin{center}
+\textcolor{darkblue}{Why does Awkward Array exist?}
+
+\vspace{0.25 cm}
+\textcolor{darkblue}{Motivation from particle physics}
+\end{center}
+\end{frame}
+
 \begin{frame}{How particle physics analyses generally work}
 \large
 \begin{columns}
@@ -125,7 +136,7 @@
 \column{0.55\linewidth}
 
 \begin{center}
-In 1964, a group at Berkeley scanned 100,000 photos to find this one: tracks left by decay products of an $\Omega$ baryon.
+In 1964, a group at Berkeley sifted through 100,000 photos to find this one: tracks left by decay products of an $\Omega$ baryon.
 
 \vspace{0.25 cm}
 \includegraphics[width=\linewidth]{img/decay-chain.png}
@@ -148,7 +159,30 @@ In 1964, a group at Berkeley scanned 100,000 photos to find this one: tracks lef
 \end{columns}
 \end{frame}
 
-\begin{frame}{Modern particle physics scales this up}
+\begin{frame}{Automatically identifying a particle decay: ${K_s}^0 \to \pi^+\pi^-$}
+\large
+\vspace{0.5 cm}
+\begin{enumerate}
+\item Loop over all pairs of particle tracks, tentatively labeling them $\pi^+$ and $\pi^-$.
+\item Calculate m = $\sqrt{(E_{\pi^+} + E_{\pi^-})^2 - \left|\vec{p}_{\pi^+} + \vec{p}_{\pi^-}\right|^2}$ for each pair.
+\item The ones with $m \sim \mbox{mass}({{K_s}^0}) = 0.5\mbox{ GeV}/c^2$ are good candidates.
+\end{enumerate}
+
+\begin{center}
+\includegraphics[height=4.2 cm]{img/kshort-1.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-2.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-3.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{Apply the technique successively down the decay chain}
+\Large
+\begin{center}
+$H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
+\end{center}
+
+\includegraphics[height=6 cm]{img/higgs-to-four-leptons.png}\hfill\includegraphics[height=6 cm]{img/higgs-to-four-leptons-2.png}
+\end{frame}
+
+\begin{frame}{Today: the same {\it kind} of thing, but bigger}
 \vspace{0.15 cm}
 \begin{columns}
 \column{0.32\linewidth}
@@ -196,28 +230,48 @@ algorithmic searches and machine learning
 \end{columns}
 \end{frame}
 
-\begin{frame}{Automatically identifying a particle decay}
+\begin{frame}{We've {\it always} needed variable-length lists and data structures}
 \large
 \vspace{0.5 cm}
-\begin{enumerate}
-\item Loop over all pairs of particle tracks, tentatively labeling them $\pi^+$ and $\pi^-$.
-\item Calculate m = $\sqrt{(E_{\pi^+} + E_{\pi^-})^2 - \left|\vec{p}_{\pi^+} + \vec{p}_{\pi^-}\right|^2}$ for each pair.
-\item The ones with $m \sim \mbox{mass}({K_s^0}) = 0.5\mbox{ GeV}/c^2$ are good candidates.
-\end{enumerate}
+
+\textcolor{darkblue}{Adding data structures to Fortran in 1976 ({\it Initiation to Hydra} by R.K. B\"ock):}
 
 \begin{center}
-\includegraphics[height=4.2 cm]{img/kshort-1.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-2.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-3.png}
+\includegraphics[width=0.8\linewidth]{img/hydra-3.png}
 \end{center}
 \end{frame}
 
-\begin{frame}{This technique is applied successively down the decay chain}
+\begin{frame}{Today, physicists use C++ and Python for analysis}
+\large
+\vspace{0.25 cm}
+
+\includegraphics[width=\linewidth]{img/programming-languages.pdf}
+
+\vspace{0.2 cm}
+\begin{itemize}\setlength{\itemsep}{0.2 cm}
+\item<2-> In C++, we can just write \mintinline{c++}{for} loops over data structures.
+\item<3-> In Python, we'd have to choose between fast NumPy, limited to rectangular structures, and slow-but-general Python.
+\end{itemize}
+
+\vspace{0.2 cm}
 \Large
 \begin{center}
-$H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
+\begin{minipage}{0.85\linewidth}
+\begin{center}
+\uncover<4->{Awkward Array is a way to get variable-length lists and data structures {\it as well as} NumPy-like performance.}
 \end{center}
-
-\includegraphics[height=6 cm]{img/higgs-to-four-leptons.png}\hfill\includegraphics[height=6 cm]{img/higgs-to-four-leptons-2.png}
+\end{minipage}
+\end{center}
 \end{frame}
+
+\begin{frame}{}
+\Huge
+\vspace{1 cm}
+\begin{center}
+\textcolor{darkblue}{Exploring a dataset: Chicago bike paths}
+\end{center}
+\end{frame}
+
 
 
 \end{document}
