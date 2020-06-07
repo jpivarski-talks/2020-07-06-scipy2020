@@ -61,9 +61,40 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}{First slide}
-\vspace{0.5 cm}
-HERE
+\begin{frame}[fragile]{What does {\it that} mean?}
+\vspace{0.3 cm}
+
+\small
+\begin{minted}{python}
+>>> import awkward1 as ak
+>>> import numpy as np
+\end{minted}
+
+\begin{minted}{python}
+dataset = [
+    [{"x": 1,  "y": [101]},
+     {"x": 4,  "y": [102, 202]},
+     {"x": 9,  "y": [103, 203, 303]}],
+    [],
+    [{"x": 16, "y": [104, 204, 304, 404]},
+     {"x": 25, "y": [105, 205, 305, 405, 505]}]
+]
+>>> array = ak.Array(dataset)
+\end{minted}
+
+\begin{uncoverenv}<2->
+\begin{minted}{python}
+>>> array[-1, :, "y", 2]
+<Array [304, 305] type='2 * int64'>
+\end{minted}
+\end{uncoverenv}
+
+\begin{uncoverenv}<3->
+\begin{minted}{python}
+>>> array[:, "y", :, 0] - np.sqrt(array[:, "x"])
+<Array [[100, 100, 100], [], [100, 100]] type='3 * var * float64'>
+\end{minted}
+\end{uncoverenv}
 \end{frame}
 
 \end{document}
