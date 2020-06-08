@@ -1,0 +1,100 @@
+Starts with:
+
+import json
+import awkward1 as ak
+import numpy as np
+
+bikeroutes_json = open("Bikeroutes.geojson").read()
+bikeroutes_pyobj = json.loads(bikeroutes_json)
+
+Then you write:
+
+bikeroutes = ak.Record(bikeroutes_pyobj)
+bikeroutes
+
+ak.type(bikeroutes)
+
+bikeroutes["features", "geometry", "coordinates"]
+
+bikeroutes.features.geometry.coordinates
+
+ak.to_list(bikeroutes.features[751])
+
+longitude = bikeroutes.features.geometry.coordinates[..., 0]
+latitude = bikeroutes.features.geometry.coordinates[..., 1]
+
+longitude, latitude
+
+np.mean(longitude)
+
+Then modify in place for:
+
+np.mean(longitude, axis=0)
+
+np.mean(longitude, axis=1)
+
+Copy-paste the next block:
+
+km_east = (longitude - np.mean(longitude)) * 82.7
+km_north = (latitude - np.mean(latitude)) * 111.1
+km_east, km_north
+
+path = np.array([1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9])
+path[1:] - path[:-1]
+
+km_east[0, 0, :-1], km_east[0, 0, 1:]
+
+Modify in place for:
+
+km_east[0, 0, :-1] - km_east[0, 0, 1:]
+
+Copy-paste the next block:
+
+segment_length = np.sqrt((km_east[:, :, 1:] - km_east[:, :, :-1])**2 +
+                         (km_north[:, :, 1:] - km_north[:, :, :-1])**2)
+segment_length
+
+ak.to_list(segment_length[751])
+
+path_length = np.sum(segment_length, axis=-1)
+path_length
+
+route_length = np.sum(path_length, axis=-1)
+route_length
+
+Scroll appropriately so that the next paste doesn't move the window:
+
+%%timeit
+
+route_length = []
+for path in bikeroutes_pyobj["features"]:
+    path_length = []
+    for polyline in path["geometry"]["coordinates"]:
+        segment_length = []
+        last = None
+        for lng, lat in polyline:
+            km_east = lng * 82.7
+            km_north = lat * 111.1
+            if last is not None:
+                dx2 = (km_east - last[0])**2
+                dy2 = (km_north - last[1])**2
+                segment_length.append(np.sqrt(dx2 + dy2))
+            last = (km_east, km_north)
+
+        path_length.append(sum(segment_length))
+    route_length.append(sum(path_length))
+
+%%timeit
+
+km_east = bikeroutes.features.geometry.coordinates[..., 0] * 82.7
+km_north = bikeroutes.features.geometry.coordinates[..., 1] * 111.1
+
+segment_length = np.sqrt((km_east[:, :, 1:] - km_east[:, :, :-1])**2 +
+                         (km_north[:, :, 1:] - km_north[:, :, :-1])**2)
+
+path_length = np.sum(segment_length, axis=-1)
+route_length = np.sum(path_length, axis=-1)
+
+Remember to make the next one a markdown cell:
+
+![](bikeroutes-scaling.svg)
