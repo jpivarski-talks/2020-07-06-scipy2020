@@ -735,9 +735,23 @@ content for y: \textcolor{darkorange}{11, 12, 22, 13, 23, 33,    14, 24, 34, 44}
 \end{Verbatim}
 \vspace{5 cm}
 \end{onlyenv}
-
 \end{frame}
 
+\begin{frame}{Software architecture}
+\large
+\vspace{0.5 cm}
+\begin{columns}
+\column{1.05\linewidth}
+\textcolor{darkblue}{Awkward 0.x} was written in pure Python, using NumPy tricks to manipulate columns.
+
+\vspace{0.5 cm}
+\textcolor{darkblue}{Awkward 1.x} is written in in three layers:
+
+\begin{center}
+\includegraphics[width=0.7\linewidth]{img/awkward-1-0-layers.pdf}
+\end{center}
+\end{columns}
+\end{frame}
 
 
 %% \begin{frame}{Like Apache Arrow, but for data transformations}
