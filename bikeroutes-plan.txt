@@ -67,9 +67,9 @@ Scroll appropriately so that the next paste doesn't move the window:
 %%timeit
 
 route_length = []
-for path in bikeroutes_pyobj["features"]:
+for route in bikeroutes_pyobj["features"]:
     path_length = []
-    for polyline in path["geometry"]["coordinates"]:
+    for polyline in route["geometry"]["coordinates"]:
         segment_length = []
         last = None
         for lng, lat in polyline:
