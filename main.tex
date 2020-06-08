@@ -287,9 +287,34 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 \end{center}
 \end{frame}
 
+\begin{frame}{}
+\Huge
+\vspace{1 cm}
+\begin{center}
+\textcolor{darkblue}{Data types and extending NumPy}
+\end{center}
+\end{frame}
 
+\begin{frame}{Data types \only<6->{and array features}}
+\Large
+\vspace{0.2 cm}
 
+\begin{itemize}
+\item<1-> \textcolor{darkblue}{Numerical:} what \mintinline{python}{np.ndarray} does: numbers, booleans, anything fixed-width.
+\item<2-> \textcolor{darkblue}{Variable-length lists:} also known as ``jagged'' or ``ragged'' arrays.
+\item<3-> \textcolor{darkblue}{Nested records:} with named (dict) or unnamed (tuple) fields.
+\item<4-> \textcolor{darkblue}{Option type:} nullable/masked data; values that can be \mintinline{python}{None}.
+\item<5-> \textcolor{darkblue}{Union type:} heterogeneous data; different types in one array.
+\end{itemize}
 
+\vspace{0.25 cm}
+\begin{itemize}
+\item<6-> \textcolor{darkblue}{Indirection:} can be used to enumerate categorical values.
+\item<7-> \textcolor{darkblue}{Partitioning:} chunks of an array can be processed in parallel.
+\item<8-> \textcolor{darkblue}{Virtualness:} they can also be lazily loaded.
+\item<9-> \textcolor{darkblue}{Behaviors:} arrays and records with domain-specific meaning, like ``spacetime point'' or ``string'' can be given specialized methods.
+\end{itemize}
+\end{frame}
 
 
 
