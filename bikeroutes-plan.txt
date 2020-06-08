@@ -64,7 +64,7 @@ route_length
 
 Scroll appropriately so that the next paste doesn't move the window:
 
-%%timeit
+%%timeit (48.3 ms)
 
 route_length = []
 for route in bikeroutes_pyobj["features"]:
@@ -84,7 +84,7 @@ for route in bikeroutes_pyobj["features"]:
         path_length.append(sum(segment_length))
     route_length.append(sum(path_length))
 
-%%timeit
+%%timeit (8.49 ms)
 
 km_east = bikeroutes.features.geometry.coordinates[..., 0] * 82.7
 km_north = bikeroutes.features.geometry.coordinates[..., 1] * 111.1
@@ -98,3 +98,30 @@ route_length = np.sum(path_length, axis=-1)
 Remember to make the next one a markdown cell:
 
 ![](bikeroutes-scaling.svg)
+
+
+
+
+And for the Numba section (170 µs):
+
+import numba as nb
+
+@nb.njit
+def compute_lengths(bikeroutes):
+    route_length = np.zeros(len(bikeroutes.features))
+    for i in range(len(bikeroutes.features)):
+        first = True
+        last_east, last_north = 0.0, 0.0
+        for path in bikeroutes.features[i].geometry.coordinates:
+            for lng_lat in path:
+                km_east = lng_lat[0] * 82.7
+                km_north = lng_lat[1] * 111.1
+                if not first:
+                    dx2 = (km_east - last_east)**2
+                    dy2 = (km_north - last_north)**2
+                    route_length[i] += np.sqrt(dx2 + dy2)
+                first = False
+                last_east, last_north = km_east, km_north
+    return route_length
+
+compute_lengths(bikeroutes)

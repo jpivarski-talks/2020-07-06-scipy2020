@@ -316,14 +316,6 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Like Apache Arrow, but for data transformations}
-\vspace{0.25 cm}
-\begin{columns}
-\column{1.1\linewidth}
-\includegraphics[width=\linewidth]{img/apache-arrow.png}
-\end{columns}
-\end{frame}
-
 \begin{frame}[fragile]{Generalizing NumPy: broadcasting}
 \begin{center}
 \includegraphics[width=0.4\linewidth]{img/cartoon-broadcasting.pdf}
@@ -457,5 +449,223 @@ array = ak.Array([
 \end{columns}
 \end{frame}
 
+\begin{frame}{}
+\Huge
+\vspace{1 cm}
+\begin{center}
+\textcolor{darkblue}{Using Awkward Arrays in Numba}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Awkward Arrays can be used in Numba-compiled functions}
+\vspace{0.1 cm}
+\small
+\begin{minted}{python}
+import numba as nb                  #  50× faster than ak.sum version
+@nb.jit                             # 250× faster than the pure Python
+def compute_lengths(bikeroutes):
+    route_length = np.zeros(len(bikeroutes.features))
+    for i in range(len(bikeroutes.features)):
+        for path in bikeroutes.features[i].geometry.coordinates:
+            first = True
+            last_east, last_north = 0.0, 0.0
+            for lng_lat in path:
+                km_east = lng_lat[0] * 82.7
+                km_north = lng_lat[1] * 111.1
+                if not first:
+                    dx2 = (km_east - last_east)**2
+                    dy2 = (km_north - last_north)**2
+                    route_length[i] += np.sqrt(dx2 + dy2)
+                first = False
+                last_east, last_north = km_east, km_north
+    return route_length
+\end{minted}
+\end{frame}
+
+\begin{frame}{\mbox{ }}
+\vspace{0.5 cm}
+\large
+\begin{columns}
+\column{0.0125\linewidth}
+
+\column{0.55\linewidth}
+\textcolor{darkblue}{\Large Awkward Array by itself}
+
+\vspace{0.25 cm}
+\begin{itemize}\setlength{\itemsep}{0.2 cm}
+\item<1-> Array-based programming
+\item<2-> Some calculations are more succinct, easier to read as expressions
+\item<3-> Precompiled operations
+\item<4-> Complex formul\ae\ require intermediate arrays, multiple passes over data
+\item<5-> Easy to generate complex output \mbox{\hspace{2 cm}}
+\end{itemize}
+
+\column{0.55\linewidth}
+\textcolor{darkblue}{\Large Awkward Array with Numba}
+
+\vspace{0.25 cm}
+\begin{itemize}\setlength{\itemsep}{0.2 cm}
+\item<1-> Imperative (Python) programming
+\item<2-> Others are easier to read as algorithms, especially ``iterate until converged''
+\item<3-> Just-in-time compiled (one-time cost)
+\item<4-> Number of passes over the data depends on \mintinline{python}{for} loops
+\item<5-> Complex output requires a new mechanism
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{ArrayBuilder (can be used in Numba)}
+\vspace{0.1 cm}
+\scriptsize
+\begin{columns}
+\column{1.1\linewidth}
+\begin{uncoverenv}<1->
+\begin{minted}{python}
+b = ak.ArrayBuilder()
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.25 cm}
+\begin{uncoverenv}<2->
+\begin{minted}{python}
+b.begin_list()    # [         # 0 * var * unknown     (initially, the type is unknown)
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<3->
+\begin{minted}{python}
+b.integer(1)      #   1,      # 0 * var * int64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<4->
+\begin{minted}{python}
+b.integer(2)      #   2,      # 0 * var * int64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<5->
+\begin{minted}{python}
+b.real(3)         #   3.0     # 0 * var * float64     (all the integers have become floats)
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<6->
+\begin{minted}{python}
+b.end_list()      # ],        # 1 * var * float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<7->
+\begin{minted}{python}
+b.begin_list()    # [         # 1 * var * float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<8->
+\begin{minted}{python}
+b.end_list()      # ],        # 2 * var * float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<9->
+\begin{minted}{python}
+b.begin_list()    # [         # 2 * var * float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<10->
+\begin{minted}{python}
+b.integer(4)      #   4,      # 2 * var * float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<11->
+\begin{minted}{python}
+b.null()          #   null    # 2 * var * ?float64    (now the floats are nullable)
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<12->
+\begin{minted}{python}
+b.end_list()      # ],        # 3 * var * ?float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<13->
+\begin{minted}{python}
+b.begin_list()    # [         # 3 * var * ?float64
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<14->
+\begin{minted}{python}
+b.begin_record()  #   {       # 3 * var * ?union[float64, {}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<15->
+\begin{minted}{python}
+b.field("x")      #     "x":  # 3 * var * ?union[float64, {"x": unknown}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<16->
+\begin{minted}{python}
+b.integer(1)      #      1,   # 3 * var * ?union[float64, {"x": int64}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<17->
+\begin{minted}{python}
+b.field("y")      #      "y": # 3 * var * ?union[float64, {"x": int64, "y": unknown}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<18->
+\begin{minted}{python}
+b.begin_list()    #      [    # 3 * var * ?union[float64, {"x": int64, "y": var * unknown}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<19->
+\begin{minted}{python}
+b.integer(2)      #        2, # 3 * var * ?union[float64, {"x": int64, "y": var * int64}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<20->
+\begin{minted}{python}
+b.integer(3)      #        3  # 3 * var * ?union[float64, {"x": int64, "y": var * int64}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<21->
+\begin{minted}{python}
+b.end_list()      #      ]    # 3 * var * ?union[float64, {"x": int64, "y": var * int64}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<22->
+\begin{minted}{python}
+b.end_record()    #   }       # 3 * var * ?union[float64, {"x": int64, "y": var * int64}]
+\end{minted}
+\end{uncoverenv}
+\vspace{-0.43 cm}
+\begin{uncoverenv}<23->
+\begin{minted}{python}
+b.end_list()      # ]         # 4 * var * ?union[float64, {"x": int64, "y": var * int64}]
+\end{minted}
+\end{uncoverenv}
+\end{columns}
+\end{frame}
+
+
+%% \begin{frame}{Like Apache Arrow, but for data transformations}
+%% \vspace{0.25 cm}
+%% \begin{columns}
+%% \column{1.1\linewidth}
+%% \includegraphics[width=\linewidth]{img/apache-arrow.png}
+%% \end{columns}
+%% \end{frame}
 
 \end{document}
