@@ -316,6 +316,57 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Like Apache Arrow, but for data transformations}
+\vspace{0.25 cm}
+\begin{columns}
+\column{1.1\linewidth}
+\includegraphics[width=\linewidth]{img/apache-arrow.png}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Generalizing NumPy: broadcasting}
+\begin{center}
+\includegraphics[width=0.4\linewidth]{img/cartoon-broadcasting.pdf}
+\end{center}
+
+\begin{columns}
+\column{1.03\linewidth}
+\begin{minted}{python}
+>>> jagged = ak.Array([[1, 2, 3],  [], [4, 5]])
+>>> flat   = ak.Array([      100, 200,    300])
+>>> jagged + flat
+<Array [[101, 102, 103], [], [304, 305]] type='3 * var * int64'>
+\end{minted}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Generalizing NumPy: reduction}
+\vspace{0.5 cm}
+
+\includegraphics[width=8 cm]{img/reduction.pdf}
+
+%% \begin{minted}{python}
+%% array = ak.Array(
+%%     [
+%%         [   2,    3,    5],
+%%         [                ],
+%%         [None,    7      ],
+%%         [  11            ]
+%%     ]
+%% )
+%% \end{minted}
+
+\begin{minted}{python}
+>>> ak.prod(array, axis=0)
+<Array [22, 21, 5] type='3 * int64'>
+\end{minted}
+
+\begin{minted}{python}
+>>> ak.prod(array, axis=1)
+<Array [30, 1, 7, 11] type='4 * int64'>
+\end{minted}
+\end{frame}
+
 
 
 \end{document}
