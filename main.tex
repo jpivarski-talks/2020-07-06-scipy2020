@@ -61,7 +61,16 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}[fragile]{What does {\it that} mean?}
+%% Window capture
+%% Crop top: 10
+%% Crop left: 15
+%% Crop right: 25
+%% Crop bottom: 50
+
+%% Audio capture
+%% -10.1 dB
+
+\begin{frame}[fragile]{What do I mean by {\it that}?}
 \vspace{0.3 cm}
 
 \small
@@ -105,9 +114,9 @@
 \item[1:00\hspace{0.5 cm}] \textcolor{gray}{(This table of contents)}
 \item[2:00\hspace{0.5 cm}] Why does this library exist? Motivation from particle physics
 \item[5:00\hspace{0.5 cm}] ``Live'' demo exploring a dataset: Chicago bike paths
-\item[10:00\hspace{0.5 cm}] Data types and generalizing NumPy
+\item[10:00\hspace{0.5 cm}] Data types and how we generalize NumPy
 \item[13:00\hspace{0.5 cm}] Using Awkward Arrays in Numba
-\item[15:00\hspace{0.5 cm}] Building complex structures (still in Numba)
+\item[15:00\hspace{0.5 cm}] Building arbitrary structures (still in Numba)
 \item[17:00\hspace{0.5 cm}] Interoperability with Pandas, Arrow, NumExpr\ldots
 \item[18:00\hspace{0.5 cm}] How it works: columnar transformations
 \item[20:00\hspace{0.5 cm}] Software architecture from Awkward 0.x to 1.x
@@ -127,7 +136,7 @@
 \end{center}
 \end{frame}
 
-\begin{frame}{How particle physics analyses generally work}
+\begin{frame}{How do particle physics analyses generally work?}
 \large
 \begin{columns}
 \column{0.48\linewidth}
@@ -143,43 +152,6 @@ In 1964, a group at Berkeley sifted through 100,000 photos to find this one: tra
 \end{center}
 
 \end{columns}
-\end{frame}
-
-\begin{frame}{}
-\Large
-\begin{columns}
-\column{1.15\linewidth}
-\vspace{-0.5 cm}
-\includegraphics[width=\linewidth]{img/090324_ALICE-hirez.jpg}
-
-\vspace{-11 cm}
-\textcolor{white}{\hspace{0.25 cm} But tracks come unlabeled: it's a large combinatorics problem per event}
-
-\vspace{11 cm}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Automatically identifying a particle decay: ${K_s}^0 \to \pi^+\pi^-$}
-\large
-\vspace{0.5 cm}
-\begin{enumerate}
-\item Loop over all pairs of particle tracks, tentatively labeling them $\pi^+$ and $\pi^-$.
-\item Calculate m = $\sqrt{(E_{\pi^+} + E_{\pi^-})^2 - \left|\vec{p}_{\pi^+} + \vec{p}_{\pi^-}\right|^2}$ for each pair.
-\item The ones with $m \sim \mbox{mass}({{K_s}^0}) = 0.5\mbox{ GeV}/c^2$ are good candidates.
-\end{enumerate}
-
-\begin{center}
-\includegraphics[height=4.2 cm]{img/kshort-1.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-2.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-3.png}
-\end{center}
-\end{frame}
-
-\begin{frame}{Apply the technique successively down the decay chain}
-\Large
-\begin{center}
-$H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
-\end{center}
-
-\includegraphics[height=6 cm]{img/higgs-to-four-leptons.png}\hfill\includegraphics[height=6 cm]{img/higgs-to-four-leptons-2.png}
 \end{frame}
 
 \begin{frame}{Today: the same {\it kind} of thing, but bigger}
@@ -230,14 +202,55 @@ algorithmic searches and machine learning
 \end{columns}
 \end{frame}
 
-\begin{frame}{We've {\it always} needed variable-length lists and data structures}
+\begin{frame}{}
+\Large
+\begin{columns}
+\column{1.15\linewidth}
+\vspace{-0.5 cm}
+\includegraphics[width=\linewidth]{img/090324_ALICE-hirez.jpg}
+
+\vspace{-11 cm}
+\textcolor{white}{\hspace{0.25 cm} Combinatorics problem: tracks aren't labeled!}
+
+\vspace{11 cm}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Finding a decay: ${K_s}^0 \to \pi^+\pi^-$ example}
+\large
+\vspace{0.5 cm}
+\begin{enumerate}
+\item Loop over all pairs of particle tracks, tentatively labeling them $\pi^+$ and $\pi^-$.
+\item Calculate $m = \sqrt{(E_{\pi^+} + E_{\pi^-})^2 - \left|\vec{p}_{\pi^+} + \vec{p}_{\pi^-}\right|^2}$ for each pair.
+\end{enumerate}
+
+\begin{center}
+\includegraphics[height=4.2 cm]{img/kshort-1.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-2.png}\hspace{0.1 cm}\includegraphics[height=4.2 cm]{img/kshort-3.png}
+\end{center}
+
+\begin{enumerate}\setcounter{enumi}{2}
+\item The ones with $m \sim \mbox{mass}({{K_s}^0}) = 0.5\mbox{ GeV}/c^2$ are good candidates.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Apply the technique successively down the decay chain}
+\Large
+\begin{center}
+$H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
+\end{center}
+
+\includegraphics[height=6 cm]{img/higgs-to-four-leptons.png}\hfill\includegraphics[height=6 cm]{img/higgs-to-four-leptons-2.png}
+\end{frame}
+
+\begin{frame}{Data structures are essential (and always have been)}
 \large
 \vspace{0.5 cm}
 
-\textcolor{darkblue}{Adding data structures to Fortran in 1976 ({\it Initiation to Hydra} by R.K. B\"ock):}
+\vspace{0.25 cm}
+\textcolor{darkblue}{{\it Initiation to Hydra} by R.K. B\"ock, 1976: added data structures to Fortran.}
 
 \begin{center}
-\includegraphics[width=0.8\linewidth]{img/hydra-3.png}
+\includegraphics[width=0.7\linewidth]{img/hydra-3.png}
 \end{center}
 \end{frame}
 
@@ -250,7 +263,7 @@ algorithmic searches and machine learning
 \vspace{0.2 cm}
 \begin{itemize}\setlength{\itemsep}{0.2 cm}
 \item<2-> In C++, we can just write \mintinline{c++}{for} loops over data structures.
-\item<3-> In Python, we'd have to choose between fast NumPy, limited to rectangular structures, and slow-but-general Python.
+\item<3-> In Python, we have a difficult choice: NumPy is fast but limited to rectangular structures; pure Python is slow, but general.
 \end{itemize}
 
 \vspace{0.2 cm}
@@ -258,7 +271,7 @@ algorithmic searches and machine learning
 \begin{center}
 \begin{minipage}{0.85\linewidth}
 \begin{center}
-\uncover<4->{Awkward Array is a way to get variable-length lists and data structures {\it as well as} NumPy-like performance.}
+\uncover<4->{Awkward Array provides NumPy-like interface and performance for general data structures.}
 \end{center}
 \end{minipage}
 \end{center}
