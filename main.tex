@@ -367,6 +367,60 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 \end{minted}
 \end{frame}
 
+\begin{frame}[fragile]{Generalizing NumPy: slices}
+\vspace{0.25 cm}
+
+\begin{minted}{python}
+array = ak.Array([
+    [{"x": 1,  "y": [101]},
+     {"x": 4,  "y": [102, 202]},
+     {"x": 9,  "y": [103, 203, 303]}],
+    [],
+    [{"x": 16, "y": [104, 204, 304, 404]},
+     {"x": 25, "y": [105, 205, 305, 405, 505]}]
+])
+\end{minted}
+
+\begin{onlyenv}<1>
+\vspace{0.25 cm}
+\begin{minted}{python}
+>>> array[2, 1, "y", 0]
+105
+>>> array[2, "y", 1, 0]
+105
+>>> array["y", 2, 1, 0]
+105
+\end{minted}
+\vspace{5 cm}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\vspace{0.25 cm}
+\begin{minted}{python}
+>>> array["x"]
+<Array [[1, 4, 9], [], [16, 25]] type='3 * var * int64'>
+\end{minted}
+\vspace{5 cm}
+\end{onlyenv}
+
+\begin{onlyenv}<3>
+\vspace{0.25 cm}
+\begin{minted}{python}
+>>> array.x % 2 == 0
+<Array [[False, True, False], [], [True, False]] type='3 * var * bool'>
+\end{minted}
+
+\vspace{0.25 cm}
+\begin{minted}{python}
+>>> array.x[array.x % 2 == 0]
+<Array [[4], [], [16]] type='3 * var * int64'>
+\end{minted}
+\vspace{5 cm}
+\end{onlyenv}
+\end{frame}
+
+
+
 
 
 \end{document}
