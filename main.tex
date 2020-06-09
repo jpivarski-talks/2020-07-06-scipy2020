@@ -300,7 +300,7 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 \vspace{0.2 cm}
 
 \begin{itemize}
-\item<1-> \textcolor{darkblue}{Numerical:} what \mintinline{python}{np.ndarray} does: numbers, booleans, anything fixed-width.
+\item<1-> \textcolor{darkblue}{Numerical:} what \mintinline{python}{np.ndarray} does: numbers, booleans, equal-sized lists (i.e. ``tensors''), anything fixed-width.
 \item<2-> \textcolor{darkblue}{Variable-length lists:} also known as ``jagged'' or ``ragged'' arrays.
 \item<3-> \textcolor{darkblue}{Nested records:} with named (dict) or unnamed (tuple) fields.
 \item<4-> \textcolor{darkblue}{Option type:} nullable/masked data; values that can be \mintinline{python}{None}.
@@ -309,8 +309,8 @@ $H \to ZZ$\hspace{1 cm}$Z \to e^+e^-$\hspace{1 cm}$Z \to \mu^+\mu^-$
 
 \vspace{0.25 cm}
 \begin{itemize}
-\item<6-> \textcolor{darkblue}{Indirection:} can be used to enumerate categorical values.
-\item<7-> \textcolor{darkblue}{Partitioning:} chunks of an array can be processed in parallel.
+\item<6-> \textcolor{darkblue}{Indirection:} integer array points to items in another array.
+\item<7-> \textcolor{darkblue}{Partitioning:} arrays can be discontiguous for parallel processing.
 \item<8-> \textcolor{darkblue}{Virtualness:} they can also be lazily loaded.
 \item<9-> \textcolor{darkblue}{Behaviors:} arrays and records with domain-specific meaning, like ``spacetime point'' or ``string'' can be given specialized methods.
 \end{itemize}
@@ -460,6 +460,28 @@ array = ak.Array([
 \begin{frame}[fragile]{Awkward Arrays can be used in Numba-compiled functions}
 \vspace{0.1 cm}
 \small
+\begin{onlyenv}<1>
+\begin{minted}{python}
+import numba as nb
+@nb.jit
+def compute_lengths(bikeroutes):
+    route_length = np.zeros(len(bikeroutes.features))
+    for i in range(len(bikeroutes.features)):
+        for path in bikeroutes.features[i].geometry.coordinates:
+            first = True
+            last_east, last_north = 0.0, 0.0
+            for lng_lat in path:
+                km_east = lng_lat[0] * 82.7
+                km_north = lng_lat[1] * 111.1
+                if not first:
+                    dx2 = (km_east - last_east)**2
+                    dy2 = (km_north - last_north)**2
+                    route_length[i] += np.sqrt(dx2 + dy2)
+                first = False
+                last_east, last_north = km_east, km_north
+    return route_length
+\end{minted}
+\end{onlyenv}\begin{onlyenv}<2>
 \begin{minted}{python}
 import numba as nb                  #  50× faster than ak.sum version
 @nb.jit                             # 250× faster than the pure Python
@@ -480,6 +502,7 @@ def compute_lengths(bikeroutes):
                 last_east, last_north = km_east, km_north
     return route_length
 \end{minted}
+\end{onlyenv}
 \end{frame}
 
 \begin{frame}{\mbox{ }}
@@ -494,7 +517,7 @@ def compute_lengths(bikeroutes):
 \vspace{0.25 cm}
 \begin{itemize}\setlength{\itemsep}{0.2 cm}
 \item<1-> Array-based programming
-\item<2-> Some calculations are more succinct, easier to read as expressions
+\item<2-> Some calculations are easier to read \mbox{as succinct,} array-based expressions
 \item<3-> Precompiled operations
 \item<4-> Complex formul\ae\ require intermediate arrays, multiple passes over data
 \item<5-> Easy to generate complex output \mbox{\hspace{2 cm}}
@@ -617,7 +640,7 @@ b.integer(1)      #      1,   # 3 * var * ?union[float64, {"x": int64}]
 \vspace{-0.43 cm}
 \begin{uncoverenv}<17->
 \begin{minted}{python}
-b.field("y")      #      "y": # 3 * var * ?union[float64, {"x": int64, "y": unknown}]
+b.field("y")      #     "y":  # 3 * var * ?union[float64, {"x": int64, "y": unknown}]
 \end{minted}
 \end{uncoverenv}
 \vspace{-0.43 cm}
@@ -658,6 +681,66 @@ b.end_list()      # ]         # 4 * var * ?union[float64, {"x": int64, "y": var 
 \end{uncoverenv}
 \end{columns}
 \end{frame}
+
+%% Next, I'd like to show how we can use Awkward Arrays with Numba, where Numba is a just-in-time compiler for Python.
+
+%% (next)
+
+%% Numba provides a new decorator, numba.jit. When this is applied to any Python function, that function is labeled for compilation through LLVM. As long as Numba is able to compile the function---as long as it can statically determine all of its types---the compiled function runs as fast as specialized C code.
+
+%% Awkward Arrays have been registered as Numba extensions, so they can be used as arguments to a Numba-compiled function. They provide the detailed type information that Numba needs to compile its expressions, and they've been implemented as a zero-copy walk over the tree of data in the array.
+
+%% (next)
+
+%% This particular example implements the bike-route length calculation from the live demo. The Numba-compiled version runs 50 times faster than the version that only used Awkward arrays and 250 times faster than the pure Python that it resembles. As a single-pass loop, this implementation doesn't create any intermediate arrays and is probably about as fast as this problem can be solved.
+
+%% (next)
+
+%% Contrasting the benefits of Awkward Array by itself and with Numba, Awkward Array by itself is array-based programming, familiar to NumPy and Pandas users, whereas Numba is imperative, more familiar to programmers.
+
+%% (next)
+
+%% Some calculations are easier to read as array expressions; others are easier to read as algorithms, especially anything that needs to ``iterate until converged.''
+
+%% (next)
+
+%% Awkward Array consists entirely of precompiled operations, directed by the user, and Numba is just-in-time compiled, a one-time-per-function cost.
+
+%% (next)
+
+%% Complex formulae require intermediate arrays and may be less cache-friendly, as each command is another pass over the data, whereas the number of passes of the data in a Numba-compiled function depends on the number of for loops.
+
+%% (next)
+
+%% With array expressions, it's easy to generate output that is as complex as the input, but complex output from Numba requires a new mechanism.
+
+%% (next)
+
+%% The Awkward Array library provides a mechanism for producing complex output from imperative code, and that mechanism, ArrayBuilder, can be used in Numba.
+
+%% This ArrayBuilder is an append-only structure whose values and data type depend on the choice and order of the methods we call.
+
+%% (next)
+
+%% For instance, we could start with a begin list.
+
+%% (next)
+
+%% Then add some values to that list.
+
+%% And end it, making the first list. Notice that the data type would have been a jagged array of integers, but that chnaged when the first float was added.
+
+%% The next list can be empty, for variety.
+
+%% If the next list contains a null where a number would ordinarily be, the list content becomes an option type of floats, to accomodate the possibility of nulls.
+
+%% In the next list, let's go wild and add a record.
+
+%% We have to specify each field before filling it.
+
+%% But the contents of the field can be anything.
+
+%% And now we are left with a jagged array of floats or records: a union type.
 
 \begin{frame}{}
 \Huge
@@ -754,6 +837,13 @@ content for y: \textcolor{darkorange}{11, 12, 22, 13, 23, 33,    14, 24, 34, 44}
 \end{frame}
 
 
+
+
+
+
+
+\end{document}
+
 %% \begin{frame}{Like Apache Arrow, but for data transformations}
 %% \vspace{0.25 cm}
 %% \begin{columns}
@@ -761,5 +851,3 @@ content for y: \textcolor{darkorange}{11, 12, 22, 13, 23, 33,    14, 24, 34, 44}
 %% \includegraphics[width=\linewidth]{img/apache-arrow.png}
 %% \end{columns}
 %% \end{frame}
-
-\end{document}
