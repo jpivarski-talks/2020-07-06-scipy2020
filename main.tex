@@ -112,20 +112,26 @@
 \vspace{0.4 cm}
 
 \large
-\begin{description}\setlength{\itemsep}{0.15 cm}
-\item[1:00\hspace{0.5 cm}] \textcolor{gray}{(This table of contents)}
-\item[2:00\hspace{0.5 cm}] Why does this library exist? Motivation from particle physics
-\item[5:00\hspace{0.5 cm}] ``Live'' demo exploring a dataset: Chicago bike paths
-\item[10:00\hspace{0.5 cm}] Data types and how we generalize NumPy
-\item[13:00\hspace{0.5 cm}] Using Awkward Arrays in Numba
-\item[15:00\hspace{0.5 cm}] Building arbitrary structures (still in Numba)
-\item[17:00\hspace{0.5 cm}] Interoperability with Pandas, Arrow, NumExpr\ldots
-\item[18:00\hspace{0.5 cm}] How it works: columnar transformations
-\item[20:00\hspace{0.5 cm}] Software architecture from Awkward 0.x to 1.x
-\item[23:00\hspace{0.5 cm}] Development of a GPU backend
-\item[25:00\hspace{0.5 cm}] Conclusions
+\begin{description}\setlength{\itemsep}{0.35 cm}
+\item[0:00\hspace{0.5 cm}] \textcolor{gray}{(Introduction)}
+\item[2:20\hspace{0.5 cm}] \textcolor{gray}{(This table of contents)}
+\item[3:20\hspace{0.5 cm}] Why does Awkward Array exist? Motivation from particle physics
+\item[7:10\hspace{0.5 cm}] ``Live'' demo exploring a dataset: Chicago bike paths
+\item[17:15\hspace{0.5 cm}] Data types and how we generalize NumPy
+\item[22:35\hspace{0.5 cm}] Using Awkward Arrays in Numba
+\item[27:50\hspace{0.5 cm}] How it works: columnar transformations
+\item[35:40\hspace{0.5 cm}] Conclusions
 \end{description}
 \end{frame}
+
+%% Introduction                            intro-take4-verygood-2min.mkv          :  2:19   0:00
+%% Table of contents                                                              :  1:00   2:20
+%% Motivation from particle physics        motivation-take3-verygood-4min.mkv     :  3:50   3:20
+%% Exploring a dataset: Chicago bike paths bikeroutes-take3-verygood-10min.mkv    : 10:05   7:10
+%% Data types and how we generalize NumPy  generalizing-take3-verygood-5min.mkv   :  5:21  17:15
+%% Using Awkward Arrays in Numba           numba-take2-verygood-5min.mkv          :  5:16  22:35
+%% How it works: columnar transformations  how-it-works-take3-verygood-8min.mkv   :  7:49  27:50
+%% Conclusions                             conclusion-verygood-2min.mkv           :  0:16  35:40
 
 \begin{frame}{}
 \Huge
@@ -828,19 +834,59 @@ content for y: \textcolor{darkorange}{11, 12, 22, 13, 23, 33,    14, 24, 34, 44}
 \textcolor{darkblue}{Awkward 0.x} was written in pure Python, using NumPy tricks to manipulate columns.
 
 \vspace{0.5 cm}
+\begin{uncoverenv}<2->
 \textcolor{darkblue}{Awkward 1.x} is written in in three layers:
 
 \begin{center}
 \includegraphics[width=0.7\linewidth]{img/awkward-1-0-layers.pdf}
 \end{center}
+\end{uncoverenv}
+
+\vspace{-1.63 cm}
+\hfill \begin{minipage}{0.2\linewidth}
+\begin{uncoverenv}<3->
+Pratyush Das
+
+Anish Biswas
+\end{uncoverenv}
+\end{minipage}
+\vspace{1.63 cm}
 \end{columns}
 \end{frame}
 
+%% Before I conclude, I'd like to show a little about how this works: the only data manipulation library I know of that does columnar transformations.
+
+%% (next)
+
+%% To begin with, all of the Awkward Array structures are columnar. This isn't novel; Apache Arrow also represents complex data in columns, in a very similar way. In fact, Awkward Array is zero-copy compatible with Arrow.)
+
+%% In a columnar representation, a dataset like the above is ``shredded'' such that all values of the x field go into a contiguous buffer in memory and all values of the y field go in a different contiguous buffer. We've lost the structure of both the outer and inner lists, so these are represented by additional arrays, which indicate where each inner list starts and stops.
+
+%% (next)
+
+%% This is a general technique: you can build any type of data structure with it. There is a tree structure that resembles the logical structure of the nested records, but whereas there might be billions of records in an array, there are only five nodes in this tree, each with an attached array. The tree grows with the *complexity* of the data type, not the *volume* of the data.
+
+%% Now suppose we want to do an operation like slicing all of the lists in field y. Using separate arrays to represent the starts and stops of those inner lists, slicing off the first element just adds one to the starts. (next) We didn't have to descend into y's content and change anything in there, nor did we need to change anything in the nodes outside of y: this kind of operation changes only one buffer and the rest can be linked by reference from the input to the output.
+
+%% For this ability to use parts of the input in the output of every operation, all Awkward Array operations are immutable: they return what looks like an altered copy of the original, but it's actually most of the same data buffers.
+
+%% (next)
+
+%% Since these trees are small, you can write an efficient implementation in Python with NumPy, which is what the first version of the software did. As the library became popular and we started maintaining and bug-fixing, it became clear that these NumPy tricks wouldn't scale---in complexity, not performance---so we started a new version that separates the problem of user interface from the problem of data ownership from the problem of the array manipulations themselves.
+
+%% The user interface is in Python, and that makes it possible to add what we need to override NumPy ufuncs, make it a column type in Pandas, and register it as a type in Numba.
+
+%% By ``data ownership,'' I mean reference counting all of the internal array buffers and deleting them at the appropriate times. We use C++11's shared pointers for that, and pybind11 to link them to Python reference counts.
+
+%% Then the array manipulations, such as adding 1 to the starts array on the previous slide, happen in a separate library with a pure C interface. This library doesn't own any data, it just reads arrays and fills arrays in the simplest, most vectorizable for loops possible.
+
+%% The extern C interface specifies an API between array manipulation and array ownership, an API that can be satisfied by alternatives. This summer, I'm working with Pratyush Das and Anish Biswas to reimplement those array manipulation functions in a suite of GPU kernels, so that CPU to GPU will be interchangeable.
 
 
 
+%% Although this Awkward Array library was motivated by a specific need in particle physics, I hope I've convinced you that it has many other uses. I'd like to hear from you; we're open to collaborators and interested to hear what you might have in mind.
 
-
+%% Thanks for listening, and I hope to see you at SciPy.
 
 \end{document}
 
